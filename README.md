@@ -59,7 +59,7 @@ docker pull andrerj/tpchlocality
 First, prepare a folder to hold all the required files.
 We'll refer to such folder as the *baseFolder*.
 
-Afterwards, go inside the *baseFolder* and clone [PotionDB's](),  [PotionDB's TPC-H client's]() repositories as well as this tool's repository:
+Afterwards, go inside the *baseFolder* and clone [PotionDB's](https://github.com/AndreRijo/potionDB/tree/remoteOp),  [PotionDB's TPC-H client's](https://github.com/AndreRijo/TPCH-Client) repositories as well as this tool's repository:
 
 ```
 git clone https://github.com/AndreRijo/potionDB.git potionDB
@@ -123,7 +123,7 @@ Where:
 - `trr` is the desired probability of orders to have exactly two products of a region different from the customer, with both products being of the **same** region;
 - `tdr` is the desired probability of orders to have exactly two products of a region different from the customer, with both products being of **different** regions;
 - for orders which are not fully local and not contemplated by the three options above, `il` defines the probability of each individual product in an order to be local to the customer. The non-local products will be from a random region.
-- `nupd`is the number of update sets to modify. If using this tool together with [PotionDB's TPC-H client](TODO), set this to 1000.
+- `nupd`is the number of update sets to modify. If using this tool together with [PotionDB's TPC-H client](https://github.com/AndreRijo/TPCH-Client), set this to 1000.
 
 All probabilities are defined with values between 0 and 1, inclusive.
 Note that `orr`, `trr` and `tdr` operate over the non-local orders: for example, if `ORDER_LOCALITY = 0.5` and `ONE_REM_RATE = 0.5`, then out of the non-local orders (half of them), half (one quarter of all orders) will have one product from a different region.
