@@ -133,7 +133,7 @@ After the tool finishes executing, a folder named *mod* will be created inside t
 
 Note that, depending on your operating system and Docker installation, you may need to set up your Docker to allow sharing of folders.
 
-**Notes for VLDB reviewers**: Use the following parameters to obtain a dataset and updates similar to the one used in the experiments in the paper:
+**Notes for Eurosys reviewers**: Use the following parameters to obtain a dataset and updates similar to the one used in the experiments in the paper:
 
 ```
 docker run -v "$path_to_your_folder/:/go/data/" -e DATA_LOC=/go/data/ -e SF=1 -e ORDER_LOCALITY=0.5 -e ITEM_LOCALITY=0.5 -e ONE_REM_RATE=0.25 -e TWO_REM_RATE=0.25 -e TWO_DIFF_REG_REM_RATE=0.25 -e N_UPD_FILES=1000 --name localityTool andrerj/tpchlocality
