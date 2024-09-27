@@ -6,13 +6,15 @@ import (
 	"os"
 	"strconv"
 	"time"
-	"tpch_client/src/client"
+
+	//"tpch_client/src/client"
 
 	//"tpch_client/src/tpch"
-	tpch "potionDB/tpch_helper"
+	//tpch "potionDB/tpch_helper"
+	tpch "tpch_data_processor/tpch"
 )
 
-//Parameters given by the command line
+// Parameters given by the command line
 type LoadParameters struct {
 	DataLoc                                                        string
 	Sf, OLocRate, ILocRate, OneRemRate, TwoRemRate, TwoRemDiffRate float64
@@ -20,7 +22,8 @@ type LoadParameters struct {
 }
 
 const (
-	header = "tpch_headers/tpch_headers_full.txt"
+	//header = "tpch_headers/tpch_headers_full.txt"
+	header = "headers/tpch_headers_full.txt"
 )
 
 var (
@@ -62,8 +65,8 @@ func ProcessData(loadP LoadParameters) {
 	checkData()
 	fmt.Println("Writting modified data...")
 	//Write base data
-	modTableFolder := tableFolder + "mod/"
-	WriteTable(modTableFolder+client.TableNames[tpch.LINEITEM]+client.TableExtension, itemsToString())
+	modTableFolder := tableFolder + "_mod/"
+	WriteTable(modTableFolder+tpch.TableNames[tpch.LINEITEM]+tpch.TableExtension, itemsToString())
 
 	if lp.NUpdFiles == 0 {
 		fmt.Println("Done! (did not process updates as n_upd_files is 0)")
@@ -78,15 +81,15 @@ func ProcessData(loadP LoadParameters) {
 	checkData()
 	//Write update data
 	fmt.Println("Writting updates...")
-	updModFilename := updFolder + "mod/" + client.UpdsNames[1] + client.UpdExtension
+	updModFilename := updFolder + "_mod/" + tpch.UpdsNames[1] + tpch.UpdExtension
 	WriteUpdates(updModFilename, getTableEntries(tpch.ORDERS), lp.NUpdFiles, itemsToStringPerOrder())
 	fmt.Println("Done!")
 
 }
 
 func readBaseData() {
-	headers, keys, toRead = tpch.ReadHeaders(headerLoc, len(client.TableNames))
-	tables = make([][][]string, len(client.TableNames))
+	headers, keys, toRead = tpch.ReadHeaders(headerLoc, len(tpch.TableNames))
+	tables = make([][][]string, len(tpch.TableNames))
 	//Force these to be read first
 	readTable(tpch.REGION)
 	readTable(tpch.NATION)
@@ -115,7 +118,7 @@ func processBaseData() {
 func readAndProcessUpdates() {
 	updPartsRead := [][]int8{toRead[tpch.ORDERS], toRead[tpch.LINEITEM]}
 	startUpdFiles := 1
-	ordersUpds, lineItemUpds, _, _, itemSizesPerOrder := tpch.ReadUpdatesPerOrder(updCompleteFilename[:], updEntries[:], client.UpdParts[:], updPartsRead, startUpdFiles, lp.NUpdFiles)
+	ordersUpds, lineItemUpds, _, _, itemSizesPerOrder := tpch.ReadUpdatesPerOrder(updCompleteFilename[:], updEntries[:], tpch.UpdParts[:], updPartsRead, startUpdFiles, lp.NUpdFiles)
 	createOrdersTable(ordersUpds)
 	createItemsTable(lineItemUpds, itemSizesPerOrder)
 }
@@ -141,14 +144,14 @@ func createItemsTable(itemsUpds [][]string, itemSizesPerOrder []int) {
 }
 
 func prepVars() {
-	nRegions = client.TableEntries[tpch.REGION]
+	nRegions = tpch.TableEntries[tpch.REGION]
 	scaleFactorS := strconv.FormatFloat(lp.Sf, 'f', -1, 64)
-	tableFolder, updFolder = lp.DataLoc+fmt.Sprintf(client.TableFormat, scaleFactorS), lp.DataLoc+fmt.Sprintf(client.UpdFormat, scaleFactorS)
-	updCompleteFilename = [3]string{updFolder + client.UpdsNames[0] + client.UpdExtension, updFolder + client.UpdsNames[1] + client.UpdExtension,
-		updFolder + client.UpdsNames[2] + client.DeleteExtension}
+	tableFolder, updFolder = lp.DataLoc+fmt.Sprintf(tpch.TableFormat, scaleFactorS), lp.DataLoc+fmt.Sprintf(tpch.UpdFormat, scaleFactorS)
+	updCompleteFilename = [3]string{updFolder + tpch.UpdsNames[0] + tpch.UpdExtension, updFolder + tpch.UpdsNames[1] + tpch.UpdExtension,
+		updFolder + tpch.UpdsNames[2] + tpch.DeleteExtension}
 	headerLoc = lp.DataLoc + header
 	//A certain % of the items ordered are already local. 20% for 5 regions
-	lp.ILocRate -= (1.0 / float64(client.TableEntries[tpch.REGION]))
+	lp.ILocRate -= (1.0 / float64(tpch.TableEntries[tpch.REGION]))
 	procTables = &tpch.Tables{}
 	procTables.InitConstants(false)
 
@@ -159,12 +162,12 @@ func prepVars() {
 }
 
 func readTable(tableN int) {
-	fmt.Println("Reading", client.TableNames[tableN], tableN)
-	nEntries := client.TableEntries[tableN]
-	if client.TableUsesSF[tableN] {
+	fmt.Println("Reading", tpch.TableNames[tableN], tableN)
+	nEntries := tpch.TableEntries[tableN]
+	if tpch.TableUsesSF[tableN] {
 		nEntries = int(float64(nEntries) * lp.Sf)
 	}
-	tables[tableN] = tpch.ReadTable(tableFolder+client.TableNames[tableN]+client.TableExtension, client.TableParts[tableN], nEntries, toRead[tableN])
+	tables[tableN] = tpch.ReadTable(tableFolder+tpch.TableNames[tableN]+tpch.TableExtension, tpch.TableParts[tableN], nEntries, toRead[tableN])
 }
 
 func processTable(tableN int) {
@@ -189,7 +192,7 @@ func processTable(tableN int) {
 }
 
 func preparePartToRegToSupTable() {
-	nRegions := client.TableEntries[tpch.REGION]
+	nRegions := tpch.TableEntries[tpch.REGION]
 	//partkey -> []region -> []suppkey
 	partToRegToSup = make([][][]int32, getTableEntries(tpch.PART)+1) //First entry is empty
 	for i := range partToRegToSup {
@@ -343,8 +346,8 @@ func allItemToLocal(order *tpch.Orders, index int) {
 	}
 }
 
-//Note: No need to update L_EXTENDEDPRICE or any other field if supplier changes as...
-//L_EXTENDEDPRICE = L_QUANTITY * P_RETAILPRICE. Discount and tax are randoms.
+// Note: No need to update L_EXTENDEDPRICE or any other field if supplier changes as...
+// L_EXTENDEDPRICE = L_QUANTITY * P_RETAILPRICE. Discount and tax are randoms.
 func itemToLocalWithOdds(order *tpch.Orders, index int) {
 	items := procTables.LineItems[index]
 	orderReg := procTables.OrderkeyToRegionkey(order.O_ORDERKEY)
@@ -397,8 +400,8 @@ func twoItemToRemoteSameReg(order *tpch.Orders, index int) {
 	updateLineItemToLocal(items[secondRemote], firstRemoteReg)
 }
 
-//Searches for two candidates to be converted to remote. Also updates all others to local.
-//Pre: there must be at least two items in the order
+// Searches for two candidates to be converted to remote. Also updates all others to local.
+// Pre: there must be at least two items in the order
 func twoItemRemoteAux(order *tpch.Orders, items []*tpch.LineItem, orderReg int8) (firstRemote, firstRemoteReg, secondRemote int8) {
 	firstRemote, firstRemoteReg, secondRemote = int8(-1), int8(-1), int8(-1)
 	i := int8(0)
@@ -537,7 +540,7 @@ func updateLineItemToDiffRemote(item *tpch.LineItem, orderReg int8, diffFromReg 
 	}
 }
 
-//Returns true if the item was updated
+// Returns true if the item was updated
 func updateItemIfHasSup(item *tpch.LineItem, partKey int32, reg int8) bool {
 	if partKey < 0 {
 		fmt.Println("Warning - negative partKey!!!", partKey)
@@ -584,31 +587,31 @@ func fixTableEntries() {
 	updEntries = make([]int, 3)
 	switch lp.Sf {
 	case 0.01:
-		client.TableEntries[tpch.LINEITEM] = 60175
+		tpch.TableEntries[tpch.LINEITEM] = 60175
 		//updEntries = []int{10, 37, 10}
 		updEntries = []int{15, 41, 16}
 	case 0.1:
-		client.TableEntries[tpch.LINEITEM] = 600572
+		tpch.TableEntries[tpch.LINEITEM] = 600572
 		//updEntries = []int{150, 592, 150}
 		//updEntries = []int{150, 601, 150}
 		updEntries = []int{151, 601, 150}
 	case 0.2:
-		client.TableEntries[tpch.LINEITEM] = 1800093
+		tpch.TableEntries[tpch.LINEITEM] = 1800093
 		updEntries = []int{300, 1164, 300} //NOTE: FAKE VALUES!
 	case 0.3:
-		client.TableEntries[tpch.LINEITEM] = 2999668
+		tpch.TableEntries[tpch.LINEITEM] = 2999668
 		updEntries = []int{450, 1747, 450} //NOTE: FAKE VALUES!
 	case 1:
-		client.TableEntries[tpch.LINEITEM] = 6001215
+		tpch.TableEntries[tpch.LINEITEM] = 6001215
 		//updEntries = []int{1500, 5822, 1500}
 		//updEntries = []int{1500, 6001, 1500}
 		updEntries = []int{1500, 6010, 1500}
 	}
 }
 
-//All items in a row
+// All items in a row
 func itemsToString() (itemsString [][]string) {
-	itemsString = make([][]string, client.TableEntries[tpch.LINEITEM])
+	itemsString = make([][]string, tpch.TableEntries[tpch.LINEITEM])
 	allItems := procTables.LineItems
 	i := 0
 	for _, orderItems := range allItems {
@@ -620,7 +623,7 @@ func itemsToString() (itemsString [][]string) {
 	return
 }
 
-//Items grouped by order
+// Items grouped by order
 func itemsToStringPerOrder() (itemsString [][][]string) {
 	itemsString = make([][][]string, getTableEntries(tpch.ORDERS))
 	allItems := procTables.LineItems
@@ -634,7 +637,7 @@ func itemsToStringPerOrder() (itemsString [][][]string) {
 	return
 }
 
-//Checks if the data was properly converted
+// Checks if the data was properly converted
 func checkData() {
 	orders := procTables.Orders[1:]
 	items := procTables.LineItems
@@ -682,8 +685,8 @@ func checkData() {
 }
 
 func getTableEntries(entryType int) int {
-	if client.TableUsesSF[entryType] {
-		return int(float64(client.TableEntries[entryType]) * lp.Sf)
+	if tpch.TableUsesSF[entryType] {
+		return int(float64(tpch.TableEntries[entryType]) * lp.Sf)
 	}
-	return client.TableEntries[entryType]
+	return tpch.TableEntries[entryType]
 }

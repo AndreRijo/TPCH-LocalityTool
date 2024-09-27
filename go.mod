@@ -1,12 +1,11 @@
-module tpch_data_processor
+module tpch_locality_tool
 
 go 1.16
 
-replace potionDB => ../potionDB
+require tpch_data_processor v0.0.0
 
-replace tpch_client => ../tpch_client
+replace potionDB/crdt => ../potionDB/crdt
 
-require (
-	potionDB v0.0.0-00010101000000-000000000000
-	tpch_client v0.0.0-00010101000000-000000000000
-)
+replace potionDB/shared => ../potionDB/shared
+
+replace tpch_data_processor => ../tpch_data_processor

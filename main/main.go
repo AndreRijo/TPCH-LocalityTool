@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math"
 	"os"
-	"tpch_data_processor/dp"
+	"tpch_locality_tool/dp"
 )
 
 func main() {
@@ -78,7 +78,7 @@ func loadFlags() dp.LoadParameters {
 		OneRemRate: *oneRemRate, TwoRemRate: *twoRemRate, TwoRemDiffRate: *twoDiffRegRemRate, NUpdFiles: int(*nUpdFiles)}
 }
 
-//Checks if parameters have valid values
+// Checks if parameters have valid values
 func parametersCheck(lp dp.LoadParameters) bool {
 	check := true
 	fmt.Printf("DataLoc: %s\n Sf: %f; OLocRate: %f; ILocRate: %f\n"+
