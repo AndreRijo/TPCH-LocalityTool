@@ -59,7 +59,7 @@ docker pull andrerj/tpchlocality
 First, prepare a folder to hold all the required files.
 We'll refer to such folder as the *baseFolder*.
 
-Afterwards, go inside the *baseFolder* and clone [PotionDB's](https://github.com/AndreRijo/potionDB/tree/remoteOp),  [TPC-H Data Processor](https://github.com/AndreRijo/tpch-data-processor/) repositories as well as this tool's repository:
+Afterwards, go inside the *baseFolder* and clone [PotionDB's](https://github.com/AndreRijo/potionDB/tree/remoteOp), [TPC-H Data Processor](https://github.com/AndreRijo/tpch-data-processor/) repositories as well as this tool's repository:
 
 ```
 git clone https://github.com/AndreRijo/potionDB.git potionDB
@@ -133,7 +133,7 @@ After the tool finishes executing, a folder named *_mod* will be created inside 
 
 Note that, depending on your operating system and Docker installation, you may need to set up your Docker to allow sharing of folders.
 
-**Notes for Eurosys reviewers**: Use the following parameters to obtain a dataset and updates similar to the one used in the experiments in the paper:
+**Notes for VLDB reviewers**: Use the following parameters to obtain a dataset and updates similar to the one used in the experiments in the paper:
 
 ```
 docker run -v "$path_to_your_folder/:/go/data/" -e DATA_LOC=/go/data/ -e SF=1 -e ORDER_LOCALITY=0.5 -e ITEM_LOCALITY=0.5 -e ONE_REM_RATE=0.25 -e TWO_REM_RATE=0.25 -e TWO_DIFF_REG_REM_RATE=0.25 -e N_UPD_FILES=1000 --name localityTool andrerj/tpchlocality
